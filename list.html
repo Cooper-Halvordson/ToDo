@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>To Do</title>
+    <style>
+        .task {
+            grid-area:task;
+            background-color:beige;
+            color : black;
+            padding: 5px;
+            
+        }
+        .resolution{
+            grid-area: resolution;
+            font-style : italic;
+        }
+        .move {
+            cursor: grab;
+        }
+        .status {
+            grid-area: status;
+        }
+        .status-high {
+            background-color:#ff8080;
+        }
+        .status-normal {
+            background-color:#66ff99;
+        }
+        .status-hold {
+            background-color:#99ccff;
+        }
+        .grid-container {
+            display: grid;
+            grid-column-gap: 1px;
+            grid-row-gap: 2px;
+            border: 1px solid black;
+            grid-template-columns: 30px auto;
+            grid-template-areas:
+                'status task'
+                'status resolution';
+            border-top: 2px solid black;
+            border-bottom: 2px solid black;
+            border-left: 2px solid black;
+            margin-bottom: 5px;
+            background-color: black;
+        }
+        body {
+            background-color: snow;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var new_btn = document.getElementById("new_button");
+        function createTask() {
+            //Create the grid block for the task.
+            let block = document.createElement("div");
+            block.classList.add("grid-container");
+
+            //Create the status element.
+            let status = document.createElement("div");
+            status.classList.add("status");
+            status.classList.add("status-normal");
+
+            //Create the task section.
+            let task = document.createElement("div");
+            task.classList.add("task");
+            task.setAttribute("contenteditable", "true");
+
+            //Create the resolution section.
+            let resolution = document.createElement("div");
+            resolution.classList.add("task");
+            resolution.classList.add("resolution");
+            resolution.setAttribute("contenteditable", "true");
+
+            block.appendChild(status);
+            block.appendChild(task);
+            block.appendChild(resolution);
+
+            document.getElementById("list").appendChild(block);
+
+        }
+    </script>
+    <h1>To Dos</h1>
+    <div id = "list">
+        <h3 id="l1">Phase 1</h3>
+        <div class="grid-container">
+            <div class="status status-high">
+                <div class="status-options">
+                    <span>Option 1</span>
+                    <span>Option 2</span>
+                    <span>Option 3</span>
+                </div>
+            </div>
+            <div contenteditable="true" class="task">
+                Add new tasks.
+            </div>
+            <div contenteditable="true" class="task resolution">
+                Append child to the list "l1".
+            </div>
+        </div>
+        <div class="grid-container">
+            <div class="status status-normal"></div>
+            <div contenteditable="true" class="task">
+                After, save to a json file.
+            </div>
+            <div contenteditable="true" class="task resolution">
+                Find out how json files work.
+            </div>
+        </div>
+        <div class="grid-container">
+            <div class="status status-hold"></div>
+            <div contenteditable="true" class="task">
+                I should keep working on this.
+            </div>
+            <div contenteditable="true" class="task resolution">
+                I definitely should.
+            </div>
+        </div>
+    </div>
+    <button id="new_button" type="button" onclick="createTask()">New</button>
+</body>
+</html>
