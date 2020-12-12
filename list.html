@@ -20,6 +20,28 @@
         }
         .status {
             grid-area: status;
+            position: relative;
+            display: inline-block;
+        }
+        .status-options {
+            display: none;
+            position: absolute;
+            min-width: 100px;
+            background-color: #f2f2f2;
+            z-index: 1;
+        }
+        .status-options button {
+            color: black;
+            padding: 12px 16px;
+            width: 100%;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .status-options button:hover {
+            background-color: #cccccc;
+        }
+        .status:hover .status-options {
+            display: block;
         }
         .status-high {
             background-color:#ff8080;
@@ -81,16 +103,28 @@
             document.getElementById("list").appendChild(block);
 
         }
+        function changeStatus(ele) {
+            if (ele.getAttribute("data-status") == "high") {
+                ele.parentElement.parentElement.className = "status status-high";
+            }
+            else if (ele.getAttribute("data-status") == "hold") {
+                ele.parentElement.parentElement.className = "status status-hold";
+            }
+            else {
+                ele.parentElement.parentElement.className = "status status-normal";
+            }
+        }
     </script>
     <h1>To Dos</h1>
     <div id = "list">
         <h3 id="l1">Phase 1</h3>
         <div class="grid-container">
             <div class="status status-high">
+                <div style="height:100%;"></div>
                 <div class="status-options">
-                    <span>Option 1</span>
-                    <span>Option 2</span>
-                    <span>Option 3</span>
+                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
+                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
+                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
                 </div>
             </div>
             <div contenteditable="true" class="task">
@@ -101,7 +135,14 @@
             </div>
         </div>
         <div class="grid-container">
-            <div class="status status-normal"></div>
+            <div class="status status-normal">
+                <div style="height:100%;"></div>
+                <div class="status-options">
+                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
+                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
+                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
+                </div>
+            </div>
             <div contenteditable="true" class="task">
                 After, save to a json file.
             </div>
@@ -110,7 +151,14 @@
             </div>
         </div>
         <div class="grid-container">
-            <div class="status status-hold"></div>
+            <div class="status status-hold">
+                <div style="height:100%;"></div>
+                <div class="status-options">
+                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
+                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
+                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
+                </div>
+            </div>
             <div contenteditable="true" class="task">
                 I should keep working on this.
             </div>
