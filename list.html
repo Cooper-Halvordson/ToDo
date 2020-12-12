@@ -52,6 +52,9 @@
         .status-hold {
             background-color:#99ccff;
         }
+        .filler {
+            height: 100%;
+        }
         .grid-container {
             display: grid;
             grid-column-gap: 1px;
@@ -75,6 +78,7 @@
 <body>
     <script>
         var new_btn = document.getElementById("new_button");
+
         function createTask() {
             //Create the grid block for the task.
             let block = document.createElement("div");
@@ -84,6 +88,38 @@
             let status = document.createElement("div");
             status.classList.add("status");
             status.classList.add("status-normal");
+
+            //Create status dropdown elements.
+            let filler = document.createElement("div");
+            filler.classList.add("filler");
+            status.appendChild(filler);
+
+
+            let dd = document.createElement("div");
+            dd.classList.add("status-options");
+
+            let b1 = document.createElement("button");
+            b1.setAttribute("data-status", "high");
+            b1.setAttribute("onClick", "changeStatus(this)");
+            b1.setAttribute("type", "button");
+            b1.innerHTML = "High";
+            dd.appendChild(b1);
+
+            b1 = document.createElement("button");
+            b1.setAttribute("data-status", "normal");
+            b1.setAttribute("onClick", "changeStatus(this)");
+            b1.setAttribute("type", "button");
+            b1.innerHTML = "Normal";
+            dd.appendChild(b1);
+
+            b1 = document.createElement("button");
+            b1.setAttribute("data-status", "hold");
+            b1.setAttribute("onClick", "changeStatus(this)");
+            b1.setAttribute("type", "button");
+            b1.innerHTML = "On Hold";
+            dd.appendChild(b1);
+
+            status.appendChild(dd);
 
             //Create the task section.
             let task = document.createElement("div");
@@ -120,7 +156,7 @@
         <h3 id="l1">Phase 1</h3>
         <div class="grid-container">
             <div class="status status-high">
-                <div style="height:100%;"></div>
+                <div class="filler"></div>
                 <div class="status-options">
                     <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
                     <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
@@ -136,7 +172,7 @@
         </div>
         <div class="grid-container">
             <div class="status status-normal">
-                <div style="height:100%;"></div>
+                <div class="filler"></div>
                 <div class="status-options">
                     <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
                     <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
@@ -152,7 +188,7 @@
         </div>
         <div class="grid-container">
             <div class="status status-hold">
-                <div style="height:100%;"></div>
+                <div class="filler"></div>
                 <div class="status-options">
                     <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
                     <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
