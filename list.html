@@ -29,6 +29,19 @@
             -ms-user-select: none;
             user-select: none;
         }
+        .complete {
+            grid-area: complete;
+            cursor: pointer;
+            background-color: #00cc66;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
         .status {
             grid-area: status;
             position: relative;
@@ -76,10 +89,10 @@
             column-gap: 1px;
             row-gap: 2px;
             border: 1px solid black;
-            grid-template-columns: 30px 50px auto;
+            grid-template-columns: 30px 50px auto 100px;
             grid-template-areas:
-                'status grab-box task'
-                'status grab-box resolution';
+                'status grab-box task complete'
+                'status grab-box resolution complete';
             border-top: 2px solid black;
             border-bottom: 2px solid black;
             border-left: 2px solid black;
@@ -94,13 +107,11 @@
 <body>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            //Query the list element
-            const list = document.getElementById("list");
-
-            //Query all items
-            [].slice.call(list.querySelectorAll(".draggable")).forEach(function(item) {
-                item.addEventListener('mousedown', mouseDownHandler);
-            });
+            var list = document.getElementsByClassName("draggable");
+            var i;
+            for (i = 0; i < list.length; i++) {
+                list[i].addEventListener('mousedown', mouseDownHandler);
+            }
         });
 
         let draggingEle;
@@ -204,7 +215,7 @@
             document.removeEventListener("mousemove", mouseMoveHandler);
             document.removeEventListener("mouseup", mouseUpHandler);
         };
-        function createTask() {
+        function createTask(ele) {
             //Create the grid block for the task.
             let block = document.createElement("div");
             block.classList.add("grid-container");
@@ -262,13 +273,24 @@
             resolution.classList.add("resolution");
             resolution.setAttribute("contenteditable", "true");
 
+            //Create the complete button section.
+            let complete = document.createElement("div");
+            complete.classList.add("complete");
+            complete.setAttribute("onclick", "removeTask(this)");
+            complete.innerHTML = "Complete?";
+
             block.appendChild(status);
             block.appendChild(move);
             block.appendChild(task);
             block.appendChild(resolution);
+            block.appendChild(complete);
 
-            document.getElementById("list").appendChild(block);
+            ele.parentElement.appendChild(block);
+            //document.getElementById("list").appendChild(block);
 
+        }
+        function removeTask(ele) {
+            ele.parentElement.remove();
         }
         function changeStatus(ele) {
             if (ele.getAttribute("data-status") == "high") {
@@ -285,6 +307,7 @@
     <h1>To Dos</h1>
     <div id = "list">
         <h3 id="l1">Phase 1</h3>
+        <button id="new_button" type="button" onclick="createTask(this)" style="margin: 5px;">New</button>
         <div class="grid-container">
             <div class="status status-normal">
                 <div class="filler"></div>
@@ -303,6 +326,7 @@
             <div contenteditable="true" class="task resolution">
                 None
             </div>
+            <div class="complete" onclick="removeTask(this)"> Complete?</div>
         </div>
         <div class="grid-container">
             <div class="status status-normal">
@@ -322,6 +346,7 @@
             <div contenteditable="true" class="task resolution">
                 None
             </div>
+            <div class="complete" onclick="removeTask(this)"> Complete?</div>
         </div>
         <div class="grid-container">
             <div class="status status-high">
@@ -336,13 +361,14 @@
                 move
             </div>
             <div contenteditable="true" class="task">
-               Be able to move the tasks.
+               Add Resolve button to delete a task.
             </div>
             <div contenteditable="true" class="task resolution">
-                I found somethign earlier that looked good.
+                
             </div>
+            <div class="complete" onclick="removeTask(this)"> Complete?</div>
         </div>
     </div>
-    <button id="new_button" type="button" onclick="createTask()">New</button>
+    
 </body>
 </html>
