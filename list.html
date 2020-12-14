@@ -294,8 +294,7 @@
             block.appendChild(resolution);
             block.appendChild(complete);
 
-            ele.parentElement.appendChild(block);
-            //document.getElementById("list").appendChild(block);
+            ele.nextElementSibling.appendChild(block);
 
         }
         function removeTask(ele) {
@@ -340,10 +339,12 @@
             header.appendChild(title);
             header.appendChild(edit_btn);
             header.appendChild(del_btn);
-            header.appendChild(new_btn);
+
+            let content = document.createElement("div");
 
             list.appendChild(header);
-
+            list.appendChild(new_btn);
+            list.appendChild(content);
             document.body.insertBefore(list, ele);
         }
         function toggleEdit(ele) {
