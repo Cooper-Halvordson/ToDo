@@ -76,6 +76,15 @@
         .status-hold {
             background-color:#99ccff;
         }
+        .new_task {
+            margin: 5px;
+        }
+        .editing {
+            border: 2px solid black;
+        }
+        .header {
+            display: inline-block;
+        }
         .filler {
             height: 100%;
         }
@@ -303,72 +312,90 @@
                 ele.parentElement.parentElement.className = "status status-normal";
             }
         }
+
+        function createList(ele){
+            let list = document.createElement("div");
+
+            let header = document.createElement("div");
+
+            let title = document.createElement("h3");
+            title.innerHTML = "List";
+            title.setAttribute("contenteditable", "false");
+            title.classList.add("header");
+
+            let edit_btn = document.createElement("button");
+            edit_btn.setAttribute("onclick", "toggleEdit(this)");
+            edit_btn.innerHTML = "Edit Name";
+
+            let del_btn = document.createElement("button");
+            del_btn.setAttribute("onclick", "deleteList(this)");
+            del_btn.innerHTML = "Delete?";
+
+            let new_btn = document.createElement("button");
+            new_btn.setAttribute("type", "button");
+            new_btn.setAttribute("onclick", "createTask(this)");
+            new_btn.classList.add("new_task");
+            new_btn.innerHTML = "New Task";
+
+            header.appendChild(title);
+            header.appendChild(edit_btn);
+            header.appendChild(del_btn);
+            header.appendChild(new_btn);
+
+            list.appendChild(header);
+
+            document.body.insertBefore(list, ele);
+        }
+        function toggleEdit(ele) {
+            if (ele.previousElementSibling.getAttribute("contenteditable") == "false") {
+                ele.previousElementSibling.classList.add("editing");
+                ele.previousElementSibling.setAttribute("contenteditable", "true")
+                ele.innerHTML = "Finish?"
+            }
+            else {
+                ele.previousElementSibling.classList.remove("editing");
+                ele.previousElementSibling.setAttribute("contenteditable", "false");
+                ele.innerHTML = "Edit Name";
+            }
+            
+        }
+        function deleteList(ele) {
+            //Add confirmation to deleting lists.
+            //ele.parentElement.parentElement.remove();
+            
+        }
     </script>
     <h1>To Dos</h1>
-    <div id = "list">
-        <h3 id="l1">Phase 1</h3>
-        <button id="new_button" type="button" onclick="createTask(this)" style="margin: 5px;">New</button>
-        <div class="grid-container">
-            <div class="status status-normal">
-                <div class="filler"></div>
-                <div class="status-options">
-                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
-                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
-                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
-                </div>
-            </div>
-            <div class="draggable">
-                move
-            </div>
-            <div contenteditable="true" class="task">
-                Save to json file.
-            </div>
-            <div contenteditable="true" class="task resolution">
-                None
-            </div>
-            <div class="complete" onclick="removeTask(this)"> Complete?</div>
+    <div>
+        <div>
+            <h3 contenteditable="false" class="header">Phase 1</h3>
+            <button onclick="toggleEdit(this)">Edit Name</button>
+            <button onclick="deleteList(this)">Delete?</button>
         </div>
-        <div class="grid-container">
-            <div class="status status-normal">
-                <div class="filler"></div>
-                <div class="status-options">
-                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
-                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
-                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
+        <button type="button" onclick="createTask(this)" class="new_task" >New Task</button>
+        <div>
+            <div class="grid-container">
+                <div class="status status-normal">
+                    <div class="filler"></div>
+                    <div class="status-options">
+                        <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
+                        <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
+                        <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
+                    </div>
                 </div>
-            </div>
-            <div class="draggable">
-                move
-            </div>
-            <div contenteditable="true" class="task">
-                Load from json file.
-            </div>
-            <div contenteditable="true" class="task resolution">
-                None
-            </div>
-            <div class="complete" onclick="removeTask(this)"> Complete?</div>
-        </div>
-        <div class="grid-container">
-            <div class="status status-high">
-                <div class="filler"></div>
-                <div class="status-options">
-                    <button data-status="high" onClick="changeStatus(this)" type="button">High</button>
-                    <button data-status="normal" onClick="changeStatus(this)" type="button">Normal</button>
-                    <button data-status="hold" onClick="changeStatus(this)" type="button">On Hold</button>
+                <div class="draggable">
+                    move
                 </div>
+                <div contenteditable="true" class="task">
+                    Use IndexedDB or localStorage to save users tasks.
+                </div>
+                <div contenteditable="true" class="task resolution">
+                    None
+                </div>
+                <div class="complete" onclick="removeTask(this)"> Complete?</div>
             </div>
-            <div class="draggable">
-                move
-            </div>
-            <div contenteditable="true" class="task">
-               Add Resolve button to delete a task.
-            </div>
-            <div contenteditable="true" class="task resolution">
-                
-            </div>
-            <div class="complete" onclick="removeTask(this)"> Complete?</div>
         </div>
     </div>
-    
+    <button type="button" onclick="createList(this)">New List</button>
 </body>
 </html>
