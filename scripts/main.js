@@ -417,6 +417,76 @@ function dbUpdateListPosition(id) {
     }
 }
 
+/**
+ * Update the task description for a single task given an id of the task.
+ * @param {*} id 
+ * @param {*} task 
+ */
+function dbUpdateTask(id, task) {
+
+    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+
+        // Get the current data for the id.
+        var data = event.target.result;
+
+        // Update the task value of the data.
+        data.task = task;
+
+        // Update the task in the database with the new value.
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to " + task);
+        }
+    }
+}
+
+/**
+ * Update the resolution description of a task given an id of the task.
+ * @param {*} id 
+ * @param {*} resolution 
+ */
+function dbUpdateResolution(id, resolution) {
+
+    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+
+        // Get the current data for the id.
+        var data = event.target.result;
+
+        // Update the task value of the data.
+        data.resolution = resolution;
+
+        // Update the task in the database with the new value.
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to " + resolution);
+        }
+    }
+}
+
 /*********************************************************
  * HTML Page Functions
  *********************************************************/
@@ -489,7 +559,7 @@ function pageAddNewTask(ent_id, ent_task, ent_resolution, ent_status, ent_list) 
     let task = document.createElement("div");
     task.classList.add("task");
     task.setAttribute("contenteditable", "true");
-    task.addEventListener("blur", dbUpdateTask);
+    task.addEventListener("blur", updateTask);
     task.innerHTML = ent_task;
 
     //Create the resolution section.
@@ -497,7 +567,7 @@ function pageAddNewTask(ent_id, ent_task, ent_resolution, ent_status, ent_list) 
     resolution.classList.add("task");
     resolution.classList.add("resolution");
     resolution.setAttribute("contenteditable", "true");
-    resolution.addEventListener("blur", dbUpdateResolution);
+    resolution.addEventListener("blur", updateResolution);
     resolution.innerHTML = ent_resolution;
 
     //Create the complete button section.
@@ -938,8 +1008,7 @@ function deleteList(event) {
  * The event handler for when the user changes the description of the task.
  * @param {*} event 
  */
-function dbUpdateTask(event) {
-
+function updateTask(event) {
     // Get the element that this was called on.
     // This would be the task div.
     ele = event.target;
@@ -947,74 +1016,26 @@ function dbUpdateTask(event) {
     // Get the id of the task being changed.
     id = ele.parentElement.id;
 
-    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-
-        // Get the current data for the id.
-        var data = event.target.result;
-
-        // Update the task value of the data.
-        data.task = ele.innerHTML;
-
-        // Update the task in the database with the new value.
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to " + ele.innerHTML);
-        }
-    }
+    dbUpdateTask(id, ele.innerHTML)
 }
 
 /**
- * 
+ * The event handler for when the user changes the description of the resolution.
  * @param {*} event 
  */
-function dbUpdateResolution(event) {
-
+function updateResolution(event) {
     // Get the element that this was called on.
-    // This would be the resolution div.
+    // This would be the task div.
     ele = event.target;
 
     // Get the id of the task being changed.
     id = ele.parentElement.id;
 
-    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-
-        // Get the current data for the id.
-        var data = event.target.result;
-
-        // Update the task value of the data.
-        data.resolution = ele.innerHTML;
-
-        // Update the task in the database with the new value.
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to " + ele.innerHTML);
-        }
-    }
+    dbUpdateResolution(id, ele.innerHTML)
 }
 
+// Add the event listener to the list creator.
 document.getElementById("listCreator").addEventListener("click", createList);
+
+// Open the database.
 openDB();
