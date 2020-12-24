@@ -335,7 +335,7 @@ function createScreen() {
                 console.log("Tasks complete");
                 task_order.sort((a, b) => (a.position > b.position) ? 1 : -1);
                 for (i = 0; i < task_order.length; i++) {
-                    pageAddNewTask(task_order[i].id, task_order[i].task, task_order[i].resolution, task_order[i].status, task_order[i].list_id);
+                    pageAddNewTask(task_order[i].id, task_order[i].task, task_order[i].resolution, task_order[i].status, document.getElementById(task_order[i].list_id));
                 }
             }
         }
