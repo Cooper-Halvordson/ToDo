@@ -33,6 +33,19 @@ let isDraggingStarted = false;
 x = 0;
 y = 0;
 
+// Initialize the reference to the database used throughout.
+db = null;
+
+// Create a list to store the ids being used.
+id_list = [];
+
+// This is used to grab a random character to generate an id.
+alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+/*********************************************************
+ * General Functions
+ *********************************************************/
+
 /**
  * Swap the position of the node A and the node B.
  * This function does not care about where each node is.
@@ -71,152 +84,6 @@ const isAbove = function(nodeA, nodeB) {
     // Determine if rectA is above the position of rectB.
     return (rectA.top + rectA.height / 2 < rectB.top + rectB.height / 2);
 };
-
-/**
- * Determine how to operate when the move button is clicked.
- *
- * @param {event} e The event.
- */
-const mouseDownHandler = function(e) {
-
-    // Set the element to be the task.
-    draggingEle = e.target.parentElement;
-
-    //Calculate the mouse position
-    const rect = draggingEle.getBoundingClientRect();
-    x = e.pageX - rect.left;
-    y = e.pageY - rect.top;
-
-    // Attach the listeners to `document`/
-    document.addEventListener('mousemove', mouseMoveHandler);
-    document.addEventListener('mouseup', mouseUpHandler);
-};
-
-/**
- * Determine how to operate what the task does when the mouse is moving.
- *
- * @param {event} e The event.
- */
-const mouseMoveHandler = function(e) {
-
-    // Get the size of the task.
-    const draggingRect = draggingEle.getBoundingClientRect();
-
-    // Has the user moved the task at all?
-    if (!isDraggingStarted) {
-        isDraggingStarted = true;
-
-        //Let the placeholder take the height of dragging element
-        //so the next element won't move up.
-        placeholder = document.createElement("div");
-        placeholder.classList.add("placeholder");
-        draggingEle.parentNode.insertBefore(placeholder, draggingEle.nextSibling);
-        placeholder.style.height = `${draggingRect.height}px`;
-    }
-
-    // Set position for dragging element
-    // based on the page, as the event happens to the page.
-    draggingEle.style.position = "absolute";
-    draggingEle.style.top = `${e.pageY - y}px`;
-    draggingEle.style.left = `${e.pageX - x}px`;
-
-    //The current order:
-    //prevEle
-    //draggingEle
-    //placeholder
-    //nextEle
-    const prevEle = draggingEle.previousElementSibling;
-    const nextEle = placeholder.nextElementSibling;
-
-    //The dragging element is above the previous element
-    //User moves the dragging element to the top
-    if (prevEle && isAbove(draggingEle, prevEle)) {
-        swap(placeholder, draggingEle);
-        swap(placeholder, prevEle);
-        return;
-    }
-
-    //The dragging element is below the next element
-    //User moves the dragging element to the bottom
-    if (nextEle && isAbove(nextEle, draggingEle)) {
-        swap(nextEle, placeholder);
-        swap(nextEle, draggingEle);
-    }
-};
-
-/**
- * Determine what to do when the player drops the task.
- *
- */
-const mouseUpHandler = function() {
-
-    // Take action if the user has moved the task at all.
-    // - Remove the placeholder.
-    // - Remove the added properties ot the task.
-    if (isDraggingStarted) {
-        placeholder.parentNode.removeChild(placeholder);
-        draggingEle.style.removeProperty('top');
-        draggingEle.style.removeProperty('left');
-        draggingEle.style.removeProperty('position');
-        placeholder = null;
-    }
-
-    // Get the list which the task belongs to.
-    var list = draggingEle.parentElement.children;
-    x = null;
-    y = null;
-    draggingEle = null;
-    isDraggingStarted = false;
-    //Remove the handlers of `mousemove` and `mouseup`.
-    document.removeEventListener("mousemove", mouseMoveHandler);
-    document.removeEventListener("mouseup", mouseUpHandler);
-
-    // For every task in the list, recalculate their position in the list.
-    var i;
-    for(i = 0; i < list.length; i++) {
-        dbUpdateTaskPosition(i, list[i].id);
-    }
-
-};
-
-// Initialize the reference to the database used throughout.
-db = null;
-
-// Create a list to store the ids being used.
-id_list = [];
-
-// This is used to grab a random character to generate an id.
-alpha="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-/**
- * Update the position value for a specific task in the database.
- * @param {*} position The new position.
- * @param {*} id The id of the task.
- */
-function dbUpdateTaskPosition(position, id) {
-    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-        var data = event.target.result;
-
-        data.position = position;
-
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to position " + position);
-        }
-    }
-}
 
 /**
  * Generate an id from a character and number. Add that id to the list.
@@ -340,7 +207,40 @@ function createScreen() {
             }
         }
     }
+}
 
+/*********************************************************
+ * Database Functions
+ *********************************************************/
+
+ /**
+ * Update the position value for a specific task in the database.
+ * @param {*} position The new position.
+ * @param {*} id The id of the task.
+ */
+function dbUpdateTaskPosition(position, id) {
+    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+        var data = event.target.result;
+
+        data.position = position;
+
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to position " + position);
+        }
+    }
 }
 
 /**
@@ -368,6 +268,158 @@ function dbAddNewTask(id, position, task, resolution, lid) {
         console.log("Data Failed To Be Saved");
     }
 }
+
+/**
+ * Remove the task from the database using the id.
+ * @param {*} id
+ */
+function dbRemoveTask(id) {
+    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
+    var request = os.delete(String(id));
+
+    request.onsuccess = function(event) {
+        console.log(String(id) + " was deleted");
+    }
+}
+
+/**
+ * Change the status of a task in the database using its id.
+ * @param {*} id
+ * @param {*} status
+ */
+function dbChangeStatus(id, status) {
+    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+
+        // Get the current data for the id.
+        var data = event.target.result;
+
+        // Update the status value of the data.
+        data.status = status;
+
+        // Update the task in the database with the new value.
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to " + status);
+        }
+    }
+}
+
+/**
+ * Add a new list to the database with an id, name, and position.
+ * @param {*} id
+ * @param {*} name
+ * @param {*} position
+ */
+function dbCreateList(id, name, position) {
+    var os = db.transaction("lists", "readwrite").objectStore("lists");
+    var request = os.add({id : id,
+                            name: name,
+                            position: position});
+
+    request.onsuccess = function(event) {
+        console.log("List: " + id + " Added");
+    }
+    request.onerror = function(event) {
+        console.log("List Failed To Be Saved");
+    }
+}
+
+/**
+ * Update the name of a list referenced by its id.
+ * @param {*} id The id of the list being updated.
+ * @param {*} name The new name.
+ */
+function dbEditListName(id, name) {
+    var os = db.transaction("lists", "readwrite").objectStore("lists");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+        // Get the current data for the id.
+        var data = event.target.result;
+
+        // Update the name value of the data.
+        data.name = name;
+
+        // Update the list in the database with the new value.
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to " + name);
+        }
+    }
+}
+
+/**
+ * Remove the specified list from the database.
+ * @param {*} id The id of the list to remove.
+ */
+function dbDeleteList(id) {
+    var os = db.transaction("lists", "readwrite").objectStore("lists");
+    var request = os.delete(String(id));
+
+    request.onsuccess = function(event) {
+        console.log("List " + String(id) + " was deleted");
+    }
+}
+
+/**
+ * Update the position of the list in the database.
+ * This will happen when a list is deleted, and all proceeding lists have to be moved up.
+ * @param {*} id The id of the list being moved.
+ */
+function dbUpdateListPosition(id) {
+    var os = db.transaction("lists", "readwrite").objectStore("lists");
+    var request = os.get(String(id));
+
+    request.onerror = function(event) {
+        console.log("Failed to update " + String(id));
+    }
+
+    request.onsuccess = function(event) {
+
+        // Get the current data for the id.
+        var data = event.target.result;
+
+        // The list is moving up one spot in the list.
+        // Take its current value and subtract one to get the new position.
+        data.position--;
+
+        // Update the list in the database with the new value.
+        var requestUpdate = os.put(data);
+
+        requestUpdate.onerror = function(event) {
+            console.log("Error on update");
+        }
+
+        requestUpdate.onsuccess = function(event) {
+            console.log(String(id) + " updated to position " + data.position);
+        }
+    }
+}
+
+/*********************************************************
+ * HTML Page Functions
+ *********************************************************/
 
 /**
  * Create a new task on the html page, giving an id, task and resoultion text, status, and its parent list.
@@ -465,110 +517,11 @@ function pageAddNewTask(ent_id, ent_task, ent_resolution, ent_status, ent_list) 
 }
 
 /**
- * The event handler called when a user clicks to create a new task.
- * @param {*} event
- */
-function createTask(event) {
-
-    // Get the element that this was called on.
-    // This would be the "New Task" button.
-    ele = event.target;
-
-    // Do not create more tasks/lists than IDs can be generated.
-    if (id_list.length < 259) {
-
-        // Get and save the new id generated.
-        var id = getID();
-        console.log("ID generated: " + String(id));
-        // Get the list that called for a new task.
-        var list = ele.parentElement;
-
-        // The task will be created at the bottom of the list, so the position value will be the same as the length of
-        // the list when the task is generated.
-        // The position is zero indexed.
-        var pos = ele.nextElementSibling.children.length;
-
-        dbAddNewTask(id, pos, "", "", list.id);
-        pageAddNewTask(id, "", "", "normal", list);
-        console.log("New Task Created!");
-    }
-
-}
-
-/**
  * Remove the task from the html page.
  * @param {*} task
  */
 function pageRemoveTask(task) {
     task.remove();
-}
-
-/**
- * Remove the task from the database using the id.
- * @param {*} id
- */
-function dbRemoveTask(id) {
-    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
-    var request = os.delete(String(id));
-
-    request.onsuccess = function(event) {
-        console.log(String(id) + " was deleted");
-    }
-}
-
-/**
- * The event handler called when a user clicks to complete a task.
- * @param {*} event
- */
-function removeTask(event) {
-
-    // Get the element that this was called on.
-    // This would be the "Complete?" button
-    ele = event.target;
-
-    // Get the task that was completed.
-    task = ele.parentElement;
-    console.log("Removing Task " + String(task.id));
-
-    dbRemoveTask(t_id);
-    pageRemoveTask(task);
-
-    //Remove the id from the list so that it might be used later.
-    removeID(t_id);
-}
-
-/**
- * Change the status of a task in the database using its id.
- * @param {*} id
- * @param {*} status
- */
-function dbChangeStatus(id, status) {
-    var os = db.transaction("tasks", "readwrite").objectStore("tasks");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-
-        // Get the current data for the id.
-        var data = event.target.result;
-
-        // Update the status value of the data.
-        data.status = status;
-
-        // Update the task in the database with the new value.
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to " + status);
-        }
-    }
 }
 
 /**
@@ -588,51 +541,6 @@ function pageChangeStatus(status, status_ele) {
     }
     else {
         status_ele.className = "status status-normal";
-    }
-}
-
-/**
- * The event handler when a user chooses a status of a task.
- * @param {*} event
- */
-function changeStatus(event) {
-
-    // Get the element that this was called on.
-    // This would be the button from the dropdown menu.
-    ele = event.target;
-
-    // Get the status element.
-    status_ele = ele.parentElement.parentElement;
-
-    // Get what status was selected to change to.
-    status = ele.getAttribute("data-status");
-
-    // Get what task had its status changed.
-    task_id = status_ele.parentElement.id;
-
-    console.log("Changing status of " + task_id + " to " + status);
-    dbChangeStatus(task_id, status);
-    pageChangeStatus(status, status_ele)
-
-}
-
-/**
- * Add a new list to the database with an id, name, and position.
- * @param {*} id
- * @param {*} name
- * @param {*} position
- */
-function dbCreateList(id, name, position) {
-    var os = db.transaction("lists", "readwrite").objectStore("lists");
-    var request = os.add({id : id,
-                            name: name,
-                            position: position});
-
-    request.onsuccess = function(event) {
-        console.log("List: " + id + " Added");
-    }
-    request.onerror = function(event) {
-        console.log("List Failed To Be Saved");
     }
 }
 
@@ -684,6 +592,195 @@ function pageCreateList(id, name) {
     console.log("New List " + id + " created!");
 }
 
+
+/*********************************************************
+ * Event Handler Functions
+ *********************************************************/
+
+/**
+ * Determine how to operate when the move button is clicked.
+ *
+ * @param {event} e The event.
+ */
+const mouseDownHandler = function(e) {
+
+    // Set the element to be the task.
+    draggingEle = e.target.parentElement;
+
+    //Calculate the mouse position
+    const rect = draggingEle.getBoundingClientRect();
+    x = e.pageX - rect.left;
+    y = e.pageY - rect.top;
+
+    // Attach the listeners to `document`/
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup', mouseUpHandler);
+};
+
+/**
+ * Determine how to operate what the task does when the mouse is moving.
+ *
+ * @param {event} e The event.
+ */
+const mouseMoveHandler = function(e) {
+
+    // Get the size of the task.
+    const draggingRect = draggingEle.getBoundingClientRect();
+
+    // Has the user moved the task at all?
+    if (!isDraggingStarted) {
+        isDraggingStarted = true;
+
+        //Let the placeholder take the height of dragging element
+        //so the next element won't move up.
+        placeholder = document.createElement("div");
+        placeholder.classList.add("placeholder");
+        draggingEle.parentNode.insertBefore(placeholder, draggingEle.nextSibling);
+        placeholder.style.height = `${draggingRect.height}px`;
+    }
+
+    // Set position for dragging element
+    // based on the page, as the event happens to the page.
+    draggingEle.style.position = "absolute";
+    draggingEle.style.top = `${e.pageY - y}px`;
+    draggingEle.style.left = `${e.pageX - x}px`;
+
+    //The current order:
+    //prevEle
+    //draggingEle
+    //placeholder
+    //nextEle
+    const prevEle = draggingEle.previousElementSibling;
+    const nextEle = placeholder.nextElementSibling;
+
+    //The dragging element is above the previous element
+    //User moves the dragging element to the top
+    if (prevEle && isAbove(draggingEle, prevEle)) {
+        swap(placeholder, draggingEle);
+        swap(placeholder, prevEle);
+        return;
+    }
+
+    //The dragging element is below the next element
+    //User moves the dragging element to the bottom
+    if (nextEle && isAbove(nextEle, draggingEle)) {
+        swap(nextEle, placeholder);
+        swap(nextEle, draggingEle);
+    }
+};
+
+/**
+ * Determine what to do when the player drops the task.
+ *
+ */
+const mouseUpHandler = function() {
+
+    // Take action if the user has moved the task at all.
+    // - Remove the placeholder.
+    // - Remove the added properties ot the task.
+    if (isDraggingStarted) {
+        placeholder.parentNode.removeChild(placeholder);
+        draggingEle.style.removeProperty('top');
+        draggingEle.style.removeProperty('left');
+        draggingEle.style.removeProperty('position');
+        placeholder = null;
+    }
+
+    // Get the list which the task belongs to.
+    var list = draggingEle.parentElement.children;
+    x = null;
+    y = null;
+    draggingEle = null;
+    isDraggingStarted = false;
+    //Remove the handlers of `mousemove` and `mouseup`.
+    document.removeEventListener("mousemove", mouseMoveHandler);
+    document.removeEventListener("mouseup", mouseUpHandler);
+
+    // For every task in the list, recalculate their position in the list.
+    var i;
+    for(i = 0; i < list.length; i++) {
+        dbUpdateTaskPosition(i, list[i].id);
+    }
+
+};
+
+/**
+ * The event handler called when a user clicks to create a new task.
+ * @param {*} event
+ */
+function createTask(event) {
+
+    // Get the element that this was called on.
+    // This would be the "New Task" button.
+    ele = event.target;
+
+    // Do not create more tasks/lists than IDs can be generated.
+    if (id_list.length < 259) {
+
+        // Get and save the new id generated.
+        var id = getID();
+        console.log("ID generated: " + String(id));
+        // Get the list that called for a new task.
+        var list = ele.parentElement;
+
+        // The task will be created at the bottom of the list, so the position value will be the same as the length of
+        // the list when the task is generated.
+        // The position is zero indexed.
+        var pos = ele.nextElementSibling.children.length;
+
+        dbAddNewTask(id, pos, "", "", list.id);
+        pageAddNewTask(id, "", "", "normal", list);
+        console.log("New Task Created!");
+    }
+
+}
+
+/**
+ * The event handler called when a user clicks to complete a task.
+ * @param {*} event
+ */
+function removeTask(event) {
+
+    // Get the element that this was called on.
+    // This would be the "Complete?" button
+    ele = event.target;
+
+    // Get the task that was completed.
+    task = ele.parentElement;
+    console.log("Removing Task " + String(task.id));
+
+    dbRemoveTask(task.id);
+    pageRemoveTask(task);
+
+    //Remove the id from the list so that it might be used later.
+    removeID(task.id);
+}
+
+/**
+ * The event handler when a user chooses a status of a task.
+ * @param {*} event
+ */
+function changeStatus(event) {
+
+    // Get the element that this was called on.
+    // This would be the button from the dropdown menu.
+    ele = event.target;
+
+    // Get the status element.
+    status_ele = ele.parentElement.parentElement;
+
+    // Get what status was selected to change to.
+    status = ele.getAttribute("data-status");
+
+    // Get what task had its status changed.
+    task_id = status_ele.parentElement.id;
+
+    console.log("Changing status of " + task_id + " to " + status);
+    dbChangeStatus(task_id, status);
+    pageChangeStatus(status, status_ele)
+
+}
+
 /**
  * The event handler when a user clicks the button to create a new list.
  * @param {*} event
@@ -708,39 +805,6 @@ function createList(event){
     }
 
 
-}
-
-/**
- * Update the name of a list referenced by its id.
- * @param {*} id The id of the list being updated.
- * @param {*} name The new name.
- */
-function dbEditListName(id, name) {
-    var os = db.transaction("lists", "readwrite").objectStore("lists");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-        // Get the current data for the id.
-        var data = event.target.result;
-
-        // Update the name value of the data.
-        data.name = name;
-
-        // Update the list in the database with the new value.
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to " + name);
-        }
-    }
 }
 
 /**
@@ -832,54 +896,6 @@ function rejectConfirm(event) {
     ele.addEventListener("click", askConfirmation);
     ele.innerHTML = "Delete?";
 
-}
-
-/**
- * Remove the specified list from the database.
- * @param {*} id The id of the list to remove.
- */
-function dbDeleteList(id) {
-    var os = db.transaction("lists", "readwrite").objectStore("lists");
-    var request = os.delete(String(id));
-
-    request.onsuccess = function(event) {
-        console.log("List " + String(id) + " was deleted");
-    }
-}
-
-/**
- * Update the position of the list in the database.
- * This will happen when a list is deleted, and all proceeding lists have to be moved up.
- * @param {*} id The id of the list being moved.
- */
-function dbUpdateListPosition(id) {
-    var os = db.transaction("lists", "readwrite").objectStore("lists");
-    var request = os.get(String(id));
-
-    request.onerror = function(event) {
-        console.log("Failed to update " + String(id));
-    }
-
-    request.onsuccess = function(event) {
-
-        // Get the current data for the id.
-        var data = event.target.result;
-
-        // The list is moving up one spot in the list.
-        // Take its current value and subtract one to get the new position.
-        data.position--;
-
-        // Update the list in the database with the new value.
-        var requestUpdate = os.put(data);
-
-        requestUpdate.onerror = function(event) {
-            console.log("Error on update");
-        }
-
-        requestUpdate.onsuccess = function(event) {
-            console.log(String(id) + " updated to position " + data.position);
-        }
-    }
 }
 
 /**
