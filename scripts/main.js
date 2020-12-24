@@ -275,7 +275,7 @@ function openCreateList(name, id) {
     list.appendChild(new_btn);
     list.appendChild(content);
     list.id = id;
-    document.body.children[2].appendChild(list);
+    document.body.children[1].appendChild(list);
     console.log("List " + id + " restored!");
 }
 
