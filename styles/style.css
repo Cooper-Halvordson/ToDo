@@ -3,7 +3,9 @@
     background-color:beige;
     color : black;
     padding: 5px;
-
+    word-wrap: break-word;
+    word-break: break-all;
+    max-width: 100%;
 }
 .resolution{
     grid-area: resolution;

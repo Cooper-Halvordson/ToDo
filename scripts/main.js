@@ -677,10 +677,11 @@ const mouseDownHandler = function(e) {
     // Set the element to be the task.
     draggingEle = e.target.parentElement;
 
-    //Calculate the mouse position
+    // Calculate the mouse position
+    // Get the offset of the mouse to the element.
     const rect = draggingEle.getBoundingClientRect();
-    x = e.pageX - rect.left;
-    y = e.pageY - rect.top;
+    x = e.pageX - (rect.left + window.pageXOffset);
+    y = e.pageY - (rect.top + window.pageYOffset);
 
     // Attach the listeners to `document`/
     document.addEventListener('mousemove', mouseMoveHandler);
@@ -754,10 +755,17 @@ const mouseUpHandler = function() {
         draggingEle.style.removeProperty('left');
         draggingEle.style.removeProperty('position');
         placeholder = null;
-    }
 
-    // Get the list which the task belongs to.
-    var list = draggingEle.parentElement.children;
+        // Get the list which the task belongs to.
+        var list = draggingEle.parentElement.children;
+
+        // For every task in the list, recalculate their position in the list.
+        var i;
+        for(i = 0; i < list.length; i++) {
+            dbUpdateTaskPosition(i, list[i].id);
+        }
+    }
+    
     x = null;
     y = null;
     draggingEle = null;
@@ -765,13 +773,6 @@ const mouseUpHandler = function() {
     //Remove the handlers of `mousemove` and `mouseup`.
     document.removeEventListener("mousemove", mouseMoveHandler);
     document.removeEventListener("mouseup", mouseUpHandler);
-
-    // For every task in the list, recalculate their position in the list.
-    var i;
-    for(i = 0; i < list.length; i++) {
-        dbUpdateTaskPosition(i, list[i].id);
-    }
-
 };
 
 /**
